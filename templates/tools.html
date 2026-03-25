@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Tools - Study Buddy</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        body { background: #0b0f19; color: white; min-height: 100vh; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        
+        .header { width: 100%; max-width: 1000px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        h1 { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+        .back-btn { color: #ef4444; text-decoration: none; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 5px; transition: 0.3s; }
+
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; width: 100%; max-width: 1000px; }
+        .tool-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; text-align: center; }
+
+        /* --- Pomodoro Timer --- */
+        #timer-display { font-size: 4rem; font-weight: bold; margin: 20px 0; color: #38bdf8; font-family: monospace; }
+        .timer-btns button { padding: 10px 20px; margin: 5px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .start { background: #10b981; color: white; }
+        .reset { background: #ef4444; color: white; }
+
+        /* --- Task Tracker --- */
+        .task-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; }
+        .add-btn { background: #a855f7; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; }
+        ul { list-style: none; text-align: left; }
+        li { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #a855f7; }
+        .delete-task { color: #ef4444; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🛠️ Smart Study Tools</h1>
+        <a href="/dashboard" class="back-btn">⬅️ Back to Home</a>
+    </div>
+
+    <div class="tools-grid">
+        <div class="tool-card">
+            <h3>⏱️ Pomodoro Focus Timer</h3>
+            <p style="color: #9ca3af; font-size: 0.9rem;">Study for 25 mins, break for 5 mins.</p>
+            <div id="timer-display">25:00</div>
+            <div class="timer-btns">
+                <button class="start" onclick="toggleTimer()" id="timer-btn">Start Session</button>
+                <button class="reset" onclick="resetTimer()">Reset</button>
+            </div>
+        </div>
+
+        <div class="tool-card">
+            <h3>📝 Semester Task Tracker</h3>
+            <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 15px;">Keep track of your assignments.</p>
+            <div class="task-input-group">
+                <input type="text" id="task-input" placeholder="e.g. DBMS Assignment...">
+                <button class="add-btn" onclick="addTask()">Add</button>
+            </div>
+            <ul id="task-list">
+                </ul>
+        </div>
+    </div>
+
+    <script>
+        // --- Timer Logic ---
+        let timeLeft = 25 * 60;
+        let timerId = null;
+
+        function updateDisplay() {
+            let mins = Math.floor(timeLeft / 60);
+            let secs = timeLeft % 60;
+            document.getElementById('timer-display').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+                btn.innerText = "Resume Session";
+            } else {
+                timerId = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timerId);
+                        alert("Time's up! Take a break.");
+                    }
+                }, 1000);
+                btn.innerText = "Pause Session";
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerId);
+            timerId = null;
+            timeLeft = 25 * 60;
+            updateDisplay();
+            document.getElementById('timer-btn').innerText = "Start Session";
+        }
+
+        // --- Task Logic ---
+        function addTask() {
+            const input = document.getElementById('task-input');
+            const val = input.value.trim();
+            if (val) {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${val}</span> <span class="delete-task" onclick="this.parentElement.remove()">✕</span>`;
+                document.getElementById('task-list').appendChild(li);
+                input.value = '';
+            }
+        }
+    </script>
+</body>
+</html>

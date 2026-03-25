@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PYQ Predictor</title>
+    <style>
+        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; padding: 40px; }
+        .container { max-width: 900px; margin: auto; }
+        h1 { color: #38bdf8; text-align: center; margin-bottom: 30px; font-size: 2.5rem; }
+        
+        /* 🔥 Dropdown Menu Styling */
+        .search-box { 
+            background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; 
+            text-align: center; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        select { 
+            padding: 12px 20px; border-radius: 8px; border: 2px solid #a855f7; 
+            background: #1e293b; color: white; font-size: 1.1rem; outline: none; margin-right: 15px;
+            cursor: pointer;
+        }
+        .btn-search { 
+            padding: 12px 25px; background: linear-gradient(135deg, #a855f7, #ec4899); 
+            color: white; border: none; border-radius: 8px; font-weight: bold; 
+            font-size: 1.1rem; cursor: pointer; transition: 0.3s;
+        }
+        .btn-search:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(236, 72, 153, 0.4); }
+
+        /* Q&A Cards Styling */
+        .qa-card { background: rgba(255,255,255,0.05); padding: 25px; margin-bottom: 25px; border-radius: 12px; border-left: 5px solid #38bdf8; transition: 0.3s; }
+        .qa-card:hover { transform: translateY(-5px); border-color: #ec4899; }
+        .question { font-size: 1.25rem; font-weight: bold; margin-bottom: 15px; line-height: 1.4; }
+        
+        details { cursor: pointer; }
+        summary { color: #a855f7; font-weight: bold; margin-bottom: 10px; outline: none; font-size: 1.1rem; }
+        .answer { color: #cbd5e1; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 8px; line-height: 1.6; font-size: 1.05rem; margin-top: 10px; }
+        
+        .back-btn { display: inline-block; margin-top: 20px; padding: 12px 25px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; }
+        .back-btn:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Smart PYQ Predictor</h1>
+        
+        <div class="search-box">
+            <form method="POST" action="/predictor">
+                <label for="subject" style="font-size: 1.2rem; margin-right: 10px; font-weight: bold;">Select your Subject: </label>
+                <select name="subject" id="subject">
+                    {% for sub in subjects %}
+                        <option value="{{ sub }}" {% if sub == current_subject %}selected{% endif %}>{{ sub }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-search">🔍 Load Important Questions</button>
+            </form>
+        </div>
+
+        <h2 style="color: #a7f3d0; border-bottom: 2px solid #a7f3d0; padding-bottom: 10px; margin-bottom: 30px;">
+            Showing Top Questions for: {{ current_subject }}
+        </h2>
+
+        {% for item in questions %}
+        <div class="qa-card">
+            <div class="question">{{ item.q }}</div>
+            <details>
+                <summary>👁️ Reveal Answer</summary>
+                <div class="answer">{{ item.a | safe }}</div>
+            </details>
+        </div>
+        {% endfor %}
+
+        <a href="/dashboard" class="back-btn">⬅️ Back to Dashboard</a>
+    </div>
+</body>
+</html>

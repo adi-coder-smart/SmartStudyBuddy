@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Study Buddy</title>
+    <style>
+        /* Base Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Blobs */
+        .blob1 { position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, #8b5cf6, transparent); filter: blur(150px); top: -100px; left: -100px; z-index: -1; animation: float 8s infinite alternate; }
+        .blob2 { position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, #ec4899, transparent); filter: blur(150px); bottom: -100px; right: -100px; z-index: -1; animation: float 10s infinite alternate-reverse; }
+        @keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(50px, 50px); } }
+        
+        /* Navbar */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center; padding: 20px 50px;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .navbar h2 { background: linear-gradient(to right, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+        .logout-btn { padding: 10px 20px; background: rgba(239, 68, 68, 0.1); color: #ef4444; text-decoration: none; border-radius: 8px; font-weight: bold; border: 1px solid rgba(239, 68, 68, 0.5); transition: 0.3s; }
+        .logout-btn:hover { background: #ef4444; color: white; box-shadow: 0 0 15px #ef4444; }
+
+        /* Dashboard Content */
+        .container { padding: 50px; max-width: 1000px; margin: auto; }
+        .welcome-text { font-size: 2.5rem; margin-bottom: 10px; font-weight: 300; }
+        .welcome-text span { font-weight: bold; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #9ca3af; margin-bottom: 40px; font-size: 1.1rem; }
+
+        /* Grid Layout for Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        
+        /* Glassmorphism Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px; padding: 30px; text-align: center; backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.3); }
+        
+        .icon { font-size: 50px; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .card h3 { font-size: 1.5rem; margin-bottom: 15px; letter-spacing: 1px;}
+        .card p { color: #9ca3af; margin-bottom: 25px; font-size: 0.95rem; line-height: 1.5; }
+        
+        /* Glowing Buttons */
+        .action-btn {
+            display: inline-block; padding: 12px 25px; border-radius: 10px; text-decoration: none;
+            font-weight: bold; color: white; transition: 0.3s; width: 100%; border: none; cursor: pointer;
+        }
+        .btn-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .btn-blue:hover { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
+        .btn-purple { background: linear-gradient(135deg, #a855f7, #7e22ce); }
+        .btn-purple:hover { box-shadow: 0 0 20px rgba(168, 85, 247, 0.6); }
+    </style>
+</head>
+<body>
+    <div class="blob1"></div>
+    <div class="blob2"></div>
+
+    <nav class="navbar">
+        <h2>Smart Study Buddy</h2>
+        <a href="/" class="logout-btn">Logout</a>
+    </nav>
+
+    <div class="container">
+        <h1 class="welcome-text">Welcome back, <span>{{ name }}</span>! 👋</h1>
+        <p class="subtitle">What's the plan for today's grind?</p>
+
+        <div class="grid">
+            <div class="card">
+                <h3>📚 Q&A Predictor</h3>
+                <p>Access 10-marks detailed questions for all 8 CS subjects with hidden answers.</p>
+                <a href="/predictor" class="btn btn-predict">Launch Predictor</a>
+            </div>
+
+            <div class="card">
+                <h3>🎮 Games Arcade</h3>
+                <p>Take a 5-minute study break with Neon Tic-Tac-Toe, Memory Flip, and more.</p>
+                <a href="/games" class="btn btn-games">Open Arcade</a>
+            </div>
+
+            <div class="card">
+                <h3>⏱️ Smart Tools</h3>
+                <p>Boost focus with Pomodoro Timer and track your Semester Assignments.</p>
+                <a href="/tools" class="btn btn-tools">Access Tools</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

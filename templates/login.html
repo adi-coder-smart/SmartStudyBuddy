@@ -45,7 +45,10 @@
             <p>Access your study hub</p>
             <form action="/login" method="POST">
                 <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="Password" required>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="login-pass" name="password" placeholder="Password" required style="width: 100%; padding-right: 40px;">
+                    <span onclick="togglePass('login-pass', this)" style="position: absolute; right: 12px; cursor: pointer; user-select: none;">👁️</span>
+                </div>
                 <button type="submit" class="btn">Login</button>
             </form>
             <div class="toggle-text">New here? <span onclick="toggleForms()">Sign Up</span></div>
@@ -56,7 +59,10 @@
             <p>Create your account</p>
             <form action="/signup" method="POST">
                 <input type="text" name="username" placeholder="Choose Username" required>
-                <input type="password" name="password" placeholder="Create Password" required>
+            <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="signup-pass" name="password" placeholder="Create Password" required style="width: 100%; padding-right: 40px;">
+                    <span onclick="togglePass('signup-pass', this)" style="position: absolute; right: 12px; cursor: pointer; user-select: none;">👁️</span>
+                </div>
                 <button type="submit" class="btn" style="background: linear-gradient(135deg, #10b981, #3b82f6);">Create Account</button>
             </form>
             <div class="toggle-text">Already a member? <span onclick="toggleForms()">Login</span></div>
@@ -68,6 +74,16 @@
             var lb = document.getElementById('login-box'), sb = document.getElementById('signup-box');
             if (lb.style.display === 'none') { lb.style.display = 'block'; sb.style.display = 'none'; }
             else { lb.style.display = 'none'; sb.style.display = 'block'; }
+        }
+        function togglePass(fieldId, icon) {
+            const field = document.getElementById(fieldId);
+            if (field.type === "password") {
+                field.type = "text";
+                icon.textContent = "🙈";
+            } else {
+                field.type = "password";
+                icon.textContent = "👁️";
+            }
         }
     </script>
 </body>

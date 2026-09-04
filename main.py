@@ -1,8 +1,22 @@
 from flask import Flask, render_template, request, redirect, url_for
 import random
+import sqlite3
 
 app = Flask(__name__)
-users_db ={}
+def init_db():
+    conn = sqlite3.connect('studybuddy.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
 # 🔥 THE 10-MARKS DETAILED DATABASE (Part 1: First 4 Subjects)
 qa_database = {
     "DBMS": [
@@ -860,27 +874,39 @@ def index():
 
 @app.route('/signup', methods=['POST'])
 def signup():
-    user = request.form.get('username')
-    pw = request.form.get('password')
-    if user in users_db:
-        return render_template('login.html', error="Username already exists! ⚠️", success=None)
-    else:
-        users_db[user] = pw
-        return render_template('login.html', error=None, success="Account created successfully! Please Login. ✅")
+    username = request.form.get('username')
+    password = request.form.get('password')
+    try:
+        conn = sqlite3.connect('studybuddy.db')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        conn.commit()
+        conn.close()
+        return render_template('login.html', success="Account created successfully! Ab login karo.")
+    except sqlite3.IntegrityError:
+        return render_template('login.html', error="Username already exists!")
 
 @app.route('/login', methods=['POST'])
 def login():
-    user = request.form.get('username')
-    pw = request.form.get('password')
-    if user in users_db and users_db[user] == pw:
-        return redirect(url_for('dashboard', username=user))
-    else:
-        return render_template('login.html', error="Invalid Username or Password! ❌", success=None)
+    username = request.form.get('username')
+    password = request.form.get('password')
+    conn = sqlite3.connect('studybuddy.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    user = cursor.fetchone()
+    conn.close()
+
+    if user:
+        return redirect(f'/dashboard?username={username}')
+    return render_template('login.html', error="Invalid Username or Password!")
 
 @app.route('/dashboard')
 def dashboard():
     user = request.args.get('username', 'Developer')
     return render_template('dashboard.html', name=user)
+
+
+
 
 # 🔥 NAYA ROUTE: Dropdown menu ke liye
 @app.route('/predictor', methods=['GET', 'POST'])
@@ -905,6 +931,57 @@ def games():
 @app.route('/tools')
 def tools():
     return render_template('tools.html')
+import random
+import string
+# --- COMMUNITY / GROUP STUDY SYSTEM ---
+study_groups = {}  # Format: { 'CODE12': {'name': 'CS Batch', 'notes': [], 'doubts': []} }
 
+@app.route('/community')
+def community():
+    user = request.args.get('username', 'Developer')
+    return render_template('community.html', name=user)
+
+@app.route('/create_group', methods=['POST'])
+def create_group():
+    group_name = request.form.get('group_name')
+    invite_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    
+    # Naya room register karo
+    study_groups[invite_code] = {
+        'name': group_name,
+        'notes': ["Welcome to the group! Start dropping your exam links and tips here."],
+        'doubts': []
+    }
+    return redirect(f'/room/{invite_code}')
+
+@app.route('/join_group', methods=['POST'])
+def join_group():
+    code = request.form.get('invite_code', '').strip().upper()
+    if code in study_groups:
+        return redirect(f'/room/{code}')
+    return render_template('community.html', error="Invalid Code! Room nahi mila.")
+
+@app.route('/room/<code>')
+def room_view(code):
+    group = study_groups.get(code)
+    if not group:
+        return redirect('/community')
+    return render_template('room.html', code=code, group=group)
+
+@app.route('/room/<code>/add_post', methods=['POST'])
+def add_post(code):
+    group = study_groups.get(code)
+    if group:
+        post_type = request.form.get('type')
+        content = request.form.get('content')
+        author = request.form.get('author', 'Buddy')
+        
+        if post_type == 'note':
+            group['notes'].append(f"{author}: {content}")
+        elif post_type == 'doubt':
+            group['doubts'].append(f"{author}: {content}")
+            
+    return redirect(f'/room/{code}')
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+    

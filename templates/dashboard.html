@@ -24,14 +24,14 @@
             display: flex; justify-content: space-between; align-items: center; padding: 20px 50px;
             background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .navbar h2 { background: linear-gradient(to right, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+        .navbar h2 { background: linear-gradient(to right, #a855f7, #ec4899); background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
         .logout-btn { padding: 10px 20px; background: rgba(239, 68, 68, 0.1); color: #ef4444; text-decoration: none; border-radius: 8px; font-weight: bold; border: 1px solid rgba(239, 68, 68, 0.5); transition: 0.3s; }
         .logout-btn:hover { background: #ef4444; color: white; box-shadow: 0 0 15px #ef4444; }
 
         /* Dashboard Content */
         .container { padding: 50px; max-width: 1000px; margin: auto; }
         .welcome-text { font-size: 2.5rem; margin-bottom: 10px; font-weight: 300; }
-        .welcome-text span { font-weight: bold; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .welcome-text span { font-weight: bold; background: linear-gradient(to right, #38bdf8, #818cf8); background-clip: text; -webkit-text-fill-color: transparent; }
         .subtitle { color: #9ca3af; margin-bottom: 40px; font-size: 1.1rem; }
 
         /* Grid Layout for Cards */
@@ -70,6 +70,15 @@
     </nav>
 
     <div class="container">
+        <!-- Brand Neon Logo -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, #00f2fe, #ff007f); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0, 242, 254, 0.6);">
+                <span style="font-size: 22px; font-weight: 900; color: #0b0f19; font-family: monospace;">⚡</span>
+            </div>
+            <span style="font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; background: linear-gradient(90deg, #00f2fe, #fff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                SMART STUDY BUDDY
+            </span>
+        </div>
         <h1 class="welcome-text">Welcome back, <span>{{ name }}</span>! 👋</h1>
         <p class="subtitle">What's the plan for today's grind?</p>
 
@@ -91,6 +100,10 @@
                 <p>Boost focus with Pomodoro Timer and track your Semester Assignments.</p>
                 <a href="/tools" class="btn btn-tools">Access Tools</a>
             </div>
+            <div class="card" onclick="location.href='/community'" style="cursor: pointer;">
+    <h3>👥 Group Study</h3>
+    <p>Create or join study rooms with friends.</p>
+</div>
         </div>
     </div>
 </body>

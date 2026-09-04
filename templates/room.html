@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ group.name }} - Study Room</title>
+    <style>
+        body { background-color: #0b0f19; color: #c9d1d9; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 25px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2a44; padding-bottom: 15px; margin-bottom: 25px; }
+        .room-tag { background: #1f2a44; color: #00f2fe; padding: 6px 14px; border-radius: 20px; font-weight: bold; border: 1px solid #00f2fe; }
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .panel { background: #131b2e; border: 1px solid #1f2a44; border-radius: 10px; padding: 20px; }
+        .panel h3 { margin-top: 0; }
+        .notes-panel { border-top: 3px solid #00f2fe; }
+        .doubts-panel { border-top: 3px solid #ff007f; }
+        .item-list { min-height: 180px; max-height: 250px; overflow-y: auto; background: #0b0f19; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
+        .item-card { background: #162036; padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; font-size: 0.9rem; }
+        textarea { width: 95%; background: #0b0f19; border: 1px solid #1f2a44; color: #fff; padding: 10px; border-radius: 6px; resize: none; outline: none; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .btn-cyan { background: #00f2fe; color: #000; }
+        .btn-pink { background: #ff007f; color: #fff; }
+        .btn:hover { opacity: 0.85; }
+        a.back-btn { color: #8b949e; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h2 style="margin: 0; color: #fff;">📚 {{ group.name }}</h2>
+            <small style="color: #8b949e;">Active Buddy Room</small>
+        </div>
+        <div class="room-tag">Room Code: {{ code }}</div>
+    </div>
+
+    <div class="grid-layout">
+        <!-- Notes Wall -->
+        <div class="panel notes-panel">
+            <h3 style="color: #00f2fe;">📌 Notes & Resource Wall</h3>
+            <div class="item-list">
+                {% for note in group.notes %}
+                    <div class="item-card">{{ note }}</div>
+                {% endfor %}
+            </div>
+            <form action="/room/{{ code }}/add_post" method="POST">
+                <input type="hidden" name="type" value="note">
+                <textarea name="content" rows="2" placeholder="Share notes link, summary, or formula..." required></textarea>
+                <button type="submit" class="btn btn-cyan">Post Note</button>
+            </form>
+        </div>
+
+        <!-- Doubt Box -->
+        <div class="panel doubts-panel">
+            <h3 style="color: #ff007f;">❓ Doubt Box</h3>
+            <div class="item-list">
+                {% for doubt in group.doubts %}
+                    <div class="item-card">{{ doubt }}</div>
+                {% else %}
+                    <small style="color: #64748b;">No doubts yet. Ask anything!</small>
+                {% endfor %}
+            </div>
+            <form action="/room/{{ code }}/add_post" method="POST">
+                <input type="hidden" name="type" value="doubt">
+                <textarea name="content" rows="2" placeholder="Ask a question or topic doubt..." required></textarea>
+                <button type="submit" class="btn btn-pink">Ask Doubt</button>
+            </form>
+        </div>
+    </div>
+
+    <p style="margin-top: 30px;"><a href="/community" class="back-btn">← Leave Room</a></p>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community - Smart Study Buddy</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header-title {
+            color: #58a6ff;
+            text-shadow: 0 0 12px rgba(88, 166, 255, 0.4);
+            margin-bottom: 30px;
+        }
+        .panel-container {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 800px;
+            width: 100%;
+        }
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+            width: 320px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #58a6ff;
+        }
+        .card p {
+            font-size: 0.9rem;
+            color: #8b949e;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 12px 0 18px 0;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #fff;
+            box-sizing: border-box;
+            outline: none;
+        }
+        input[type="text"]:focus {
+            border-color: #58a6ff;
+        }
+        .btn-neon {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .btn-create {
+            background: #238636;
+            color: #ffffff;
+        }
+        .btn-create:hover {
+            background: #2ea043;
+        }
+        .btn-join {
+            background: #1f6feb;
+            color: #ffffff;
+        }
+        .btn-join:hover {
+            background: #388bfd;
+        }
+        .status-box {
+            margin-top: 25px;
+            padding: 12px 20px;
+            background: rgba(56, 139, 253, 0.15);
+            border: 1px solid #388bfd;
+            border-radius: 6px;
+            color: #58a6ff;
+            font-weight: 500;
+        }
+        .back-link {
+            margin-top: 35px;
+            color: #8b949e;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .back-link:hover {
+            color: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="header-title">👥 Study Rooms & Community</h1>
+
+    <div class="panel-container">
+        <!-- Create Room Card -->
+        <div class="card">
+            <h3>Create a Room</h3>
+            <p>Generate a 6-digit code to invite friends.</p>
+            <form action="/create_group" method="POST">
+                <input type="text" name="group_name" placeholder="Room Name (e.g., CS Batch)" required>
+                <button type="submit" class="btn-neon btn-create">Create Room</button>
+            </form>
+        </div>
+
+        <!-- Join Room Card -->
+        <div class="card">
+            <h3>Join a Room</h3>
+            <p>Enter an invite code shared by your friend.</p>
+            <form action="/join_group" method="POST">
+                <input type="text" name="invite_code" placeholder="Enter 6-digit Code" maxlength="6" required>
+                <button type="submit" class="btn-neon btn-join">Join Room</button>
+            </form>
+        </div>
+    </div>
+
+    {% if success %}
+        <div class="status-box">{{ success }}</div>
+    {% endif %}
+
+    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+</body>
+</html>

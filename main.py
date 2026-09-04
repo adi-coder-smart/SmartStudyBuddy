@@ -6,11 +6,29 @@ app = Flask(__name__)
 def init_db():
     conn = sqlite3.connect('studybuddy.db')
     cursor = conn.cursor()
+    # Users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL
+        )
+    ''')
+    # Study Rooms table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS rooms (
+            code TEXT PRIMARY KEY,
+            name TEXT NOT NULL
+        )
+    ''')
+    # Posts (Notes & Doubts) table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            room_code TEXT NOT NULL,
+            post_type TEXT NOT NULL,
+            content TEXT NOT NULL,
+            FOREIGN KEY (room_code) REFERENCES rooms(code)
         )
     ''')
     conn.commit()
@@ -933,9 +951,7 @@ def tools():
     return render_template('tools.html')
 import random
 import string
-# --- COMMUNITY / GROUP STUDY SYSTEM ---
-study_groups = {}  # Format: { 'CODE12': {'name': 'CS Batch', 'notes': [], 'doubts': []} }
-
+# --- COMMUNITY ROOMS (SQLITE PERSISTENT) ---
 @app.route('/community')
 def community():
     user = request.args.get('username', 'Developer')
@@ -943,44 +959,66 @@ def community():
 
 @app.route('/create_group', methods=['POST'])
 def create_group():
-    group_name = request.form.get('group_name')
+    group_name = request.form.get('group_name', '').strip()
     invite_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     
-    # Naya room register karo
-    study_groups[invite_code] = {
-        'name': group_name,
-        'notes': ["Welcome to the group! Start dropping your exam links and tips here."],
-        'doubts': []
-    }
+    conn = sqlite3.connect('studybuddy.db')
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO rooms (code, name) VALUES (?, ?)", (invite_code, group_name))
+    # Initial default note
+    cursor.execute("INSERT INTO posts (room_code, post_type, content) VALUES (?, ?, ?)", 
+                   (invite_code, 'note', 'Welcome to the room! Drop notes, links, and questions here.'))
+    conn.commit()
+    conn.close()
     return redirect(f'/room/{invite_code}')
 
 @app.route('/join_group', methods=['POST'])
 def join_group():
     code = request.form.get('invite_code', '').strip().upper()
-    if code in study_groups:
+    conn = sqlite3.connect('studybuddy.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT code FROM rooms WHERE code = ?", (code,))
+    room = cursor.fetchone()
+    conn.close()
+    
+    if room:
         return redirect(f'/room/{code}')
     return render_template('community.html', error="Invalid Code! Room nahi mila.")
 
 @app.route('/room/<code>')
 def room_view(code):
-    group = study_groups.get(code)
-    if not group:
+    conn = sqlite3.connect('studybuddy.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM rooms WHERE code = ?", (code,))
+    room = cursor.fetchone()
+    
+    if not room:
+        conn.close()
         return redirect('/community')
-    return render_template('room.html', code=code, group=group)
+    
+    cursor.execute("SELECT post_type, content FROM posts WHERE room_code = ?", (code,))
+    all_posts = cursor.fetchall()
+    conn.close()
+    
+    notes = [p[1] for p in all_posts if p[0] == 'note']
+    doubts = [p[1] for p in all_posts if p[0] == 'doubt']
+    
+    group_data = {'name': room[0], 'notes': notes, 'doubts': doubts}
+    return render_template('room.html', code=code, group=group_data)
 
 @app.route('/room/<code>/add_post', methods=['POST'])
 def add_post(code):
-    group = study_groups.get(code)
-    if group:
-        post_type = request.form.get('type')
-        content = request.form.get('content')
-        author = request.form.get('author', 'Buddy')
+    post_type = request.form.get('type')
+    content = request.form.get('content', '').strip()
+    
+    if content:
+        conn = sqlite3.connect('studybuddy.db')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO posts (room_code, post_type, content) VALUES (?, ?, ?)", 
+                       (code, post_type, content))
+        conn.commit()
+        conn.close()
         
-        if post_type == 'note':
-            group['notes'].append(f"{author}: {content}")
-        elif post_type == 'doubt':
-            group['doubts'].append(f"{author}: {content}")
-            
     return redirect(f'/room/{code}')
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

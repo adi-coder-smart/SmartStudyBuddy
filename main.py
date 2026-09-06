@@ -4,6 +4,7 @@ import random
 import sqlite3
 import json
 import re
+import requests
 import google.generativeai as genai
 
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
@@ -1125,10 +1126,14 @@ def ask_ai(code):
 @app.route("/room/<room_code>/start_quiz", methods=["POST"])
 def start_quiz(room_code):
     topic = request.form.get("topic", "Computer Science fundamentals")
-    
+    api_key = os.environ.get("GEMINI_API_KEY")
+
+    if not api_key:
+        return jsonify({"status": "error", "message": "API key missing"}), 500
+
     prompt = f"""
     Generate 5 multiple-choice questions on '{topic}' suitable for college computer science students.
-    Return ONLY a valid JSON array of objects. Do not write markdown or backticks.
+    Return ONLY a valid raw JSON array of objects. Do not wrap in markdown or backticks.
     Format:
     [
       {{
@@ -1139,25 +1144,30 @@ def start_quiz(room_code):
       }}
     ]
     """
-    
+
+    # Lightweight direct REST call - avoids gRPC memory crash on Render
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+
     try:
-        # Gemini 3.5 Flash primary call
-        try:
-            model = genai.GenerativeModel("gemini-3.5-flash")
-            response = model.generate_content(prompt)
-        except Exception:
-            # Fallback to general flash if older API endpoint
-            model = genai.GenerativeModel("gemini-1.5-flash-latest")
-            response = model.generate_content(prompt)
-            
-        raw_text = response.text.strip()
+        res = requests.post(url, json=payload, timeout=20)
+        res_data = res.json()
+
+        if res.status_code != 200:
+            error_msg = res_data.get("error", {}).get("message", "Gemini API error")
+            return jsonify({"status": "error", "message": error_msg}), res.status_code
+
+        raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
         cleaned_json = re.sub(r"^```json|```$", "", raw_text, flags=re.MULTILINE).strip()
         quiz_data = json.loads(cleaned_json)
-        
+
         if isinstance(quiz_data, dict):
             quiz_data = next(iter(quiz_data.values()))
-            
+
         return jsonify({"status": "success", "quiz": quiz_data})
+
     except Exception as e:
         print(f"Quiz Generation Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500

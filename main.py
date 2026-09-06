@@ -1151,11 +1151,15 @@ def start_quiz(room_code):
     print("SENDING URL TO REQUESTS:", url)
 
     payload = {
-        "contents": [{"parts": [{"text": prompt}]}]
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "maxOutputTokens": 800,
+            "temperature": 0.5
+        }
     }
 
     try:
-        res = requests.post(url, json=payload, timeout=35)
+        res = requests.post(url, json=payload, timeout=18)
         res_data = res.json()
 
         if res.status_code != 200:

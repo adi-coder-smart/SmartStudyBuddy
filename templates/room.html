@@ -21,6 +21,7 @@
         .btn:hover { opacity: 0.85; }
         a.back-btn { color: #8b949e; text-decoration: none; font-size: 0.9rem; }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 </head>
 <body>
     <div class="header">
@@ -53,7 +54,7 @@
             <div class="item-list">
                 {% for doubt in group.doubts %}
                     <div class="item-card">
-    <div>{{ doubt }}</div>
+    <div class="ai-answer-content" style="white-space: pre-wrap; line-height: 1.6;">{{ doubt }}</div>
     <form action="/room/{{ code }}/ask_ai" method="POST" style="margin-top: 8px;">
         <input type="hidden" name="doubt_text" value="{{ doubt }}">
         <button type="submit" style="background: linear-gradient(135deg, #00f2fe, #4facfe); border: none; color: #000; font-weight: bold; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
@@ -74,5 +75,19 @@
     </div>
 
     <p style="margin-top: 30px;"><a href="/community" class="back-btn">← Leave Room</a></p>
+    <!-- Markdown parser aur Code Syntax Highlighter -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // AI answer wale elements ko markdown mein parse karna
+        document.querySelectorAll(".ai-answer-content").forEach((elem) => {
+          elem.innerHTML = marked.parse(elem.innerText.trim());
+        });
+        // Saare code blocks ko highlight karna
+        hljs.highlightAll();
+      });
+    </script>
 </body>
 </html>

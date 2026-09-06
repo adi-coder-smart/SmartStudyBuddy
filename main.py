@@ -1,6 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for
+import os
 import random
 import sqlite3
+import google.generativeai as genai
+
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+
 
 app = Flask(__name__)
 def init_db():
@@ -1087,6 +1092,33 @@ def add_post(code):
         conn.commit()
         conn.close()
         
+    return redirect(f'/room/{code}')
+@app.route('/room/<code>/ask_ai', methods=['POST'])
+def ask_ai(code):
+    print("--- ASK AI BUTTON CLICKED ---")
+    doubt_text = request.form.get('doubt_text', '').strip()
+    print("Doubt Text Received:", doubt_text)
+    
+    if doubt_text:
+        try:
+            print("Calling Gemini API...")
+            model = genai.GenerativeModel('gemini-3.5-flash')
+            prompt = f"Explain this CS student doubt briefly in simple terms with 2-3 clear bullet points: {doubt_text}"
+            response = model.generate_content(prompt)
+            print("Gemini Response:", response.text)
+
+            ai_reply = f"🤖 Buddy AI: {response.text}"
+
+            conn = sqlite3.connect('studybuddy.db')
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO posts (room_code, post_type, content) VALUES (?, ?, ?)",
+                           (code, 'doubt', ai_reply))
+            conn.commit()
+            conn.close()
+            print("Saved to DB successfully!")
+        except Exception as e:
+            print("🔥 CRITICAL AI ERROR:", repr(e))
+
     return redirect(f'/room/{code}')
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

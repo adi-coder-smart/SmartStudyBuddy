@@ -1125,20 +1125,61 @@ def ask_ai(code):
     return redirect(f'/room/{code}')
 @app.route("/room/<room_code>/start_quiz", methods=["POST"])
 def start_quiz(room_code):
+    topic = request.form.get("topic", "Computer Science fundamentals")
     api_key = os.environ.get("GEMINI_API_KEY")
-    # Google se direct list mangwao
-    list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
-    res = requests.get(list_url)
-    print("=== AVAILABLE GOOGLE MODELS START ===")
+
+    if not api_key:
+        return jsonify({"status": "error", "message": "Render GEMINI_API_KEY missing"}), 500
+
+    prompt = f"""
+    Generate 5 multiple-choice questions on '{topic}' suitable for college computer science students.
+    Return ONLY a valid raw JSON array of objects. Do not write markdown or backticks (no ```json).
+    Format:
+    [
+      {{
+        "id": 1,
+        "question": "Question text here?",
+        "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+        "answer": "Option 1"
+      }}
+    ]
+    """
+
+    # Exact working endpoint from your log list
+    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=){api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+
     try:
-        models = [m['name'] for m in res.json().get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', [])]
-        for m in models:
-            print("WORKING MODEL:", m)
+        res = requests.post(url, json=payload, timeout=35)
+        res_data = res.json()
+
+        if res.status_code != 200:
+            error_msg = res_data.get("error", {}).get("message", "API request failed")
+            print(f"Gemini API Error: {error_msg}")
+            return jsonify({"status": "error", "message": error_msg}), res.status_code
+
+        raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        
+        # Strip code fences agar model ne laga di ho
+        cleaned_json = re.sub(r"^```json|```$", "", raw_text, flags=re.MULTILINE).strip()
+        
+        # Regex to extract pure JSON array
+        match = re.search(r'\[.*\]', cleaned_json, re.DOTALL)
+        if match:
+            quiz_data = json.loads(match.group(0))
+        else:
+            quiz_data = json.loads(cleaned_json)
+
+        if isinstance(quiz_data, dict):
+            quiz_data = next(iter(quiz_data.values()))
+
+        return jsonify({"status": "success", "quiz": quiz_data})
+
     except Exception as e:
-        print("LIST ERROR:", res.text)
-    print("=== AVAILABLE GOOGLE MODELS END ===")
-    
-    return jsonify({"status": "error", "message": "Check Render logs for model list"}), 500
+        print(f"Quiz Server Error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
     

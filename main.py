@@ -1128,20 +1128,31 @@ def start_quiz(room_code):
     
     prompt = f"""
     Generate 5 multiple-choice questions on '{topic}' suitable for college computer science students.
-    Include 4 options and the exact string matching correct answer.
+    Return ONLY a valid JSON array of objects. Do not write markdown or backticks.
+    Format:
+    [
+      {{
+        "id": 1,
+        "question": "Question text here?",
+        "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+        "answer": "Option 1"
+      }}
+    ]
     """
     
     try:
-        # Structured JSON enforcement
-        model = genai.GenerativeModel(
-            "gemini-1.5-flash",
-            generation_config={"response_mime_type": "application/json"}
-        )
-        response = model.generate_content(prompt)
+        # Try 1.5-flash first, fallback to gemini-pro if older sdk
+        try:
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+        except Exception:
+            model = genai.GenerativeModel("gemini-pro")
+            response = model.generate_content(prompt)
+            
+        raw_text = response.text.strip()
+        cleaned_json = re.sub(r"^```json|```$", "", raw_text, flags=re.MULTILINE).strip()
+        quiz_data = json.loads(cleaned_json)
         
-        quiz_data = json.loads(response.text.strip())
-        
-        # In case model wraps the array in a parent object like {"quiz": [...]}
         if isinstance(quiz_data, dict):
             quiz_data = next(iter(quiz_data.values()))
             

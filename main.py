@@ -1146,13 +1146,13 @@ def start_quiz(room_code):
     """
 
     # Direct Gemini 3.5 Flash REST endpoint
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     payload = {
         "contents": [{"parts": [{"text": prompt}]}]
     }
 
     try:
-        res = requests.post(url, json=payload, timeout=25)
+        res = requests.post(url, json=payload, timeout=35)
         res_data = res.json()
 
         if res.status_code != 200:

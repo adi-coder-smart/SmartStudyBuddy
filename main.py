@@ -1129,11 +1129,11 @@ def start_quiz(room_code):
     api_key = os.environ.get("GEMINI_API_KEY")
 
     if not api_key:
-        return jsonify({"status": "error", "message": "API key missing"}), 500
+        return jsonify({"status": "error", "message": "Render GEMINI_API_KEY missing"}), 500
 
     prompt = f"""
     Generate 5 multiple-choice questions on '{topic}' suitable for college computer science students.
-    Return ONLY a valid raw JSON array of objects. Do not wrap in markdown or backticks.
+    Return ONLY a valid raw JSON array of objects. Do not write markdown or backticks (no ```json).
     Format:
     [
       {{
@@ -1145,18 +1145,19 @@ def start_quiz(room_code):
     ]
     """
 
-    # Lightweight direct REST call - avoids gRPC memory crash on Render
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    # Direct Gemini 3.5 Flash REST endpoint
+    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=){api_key}"
     payload = {
         "contents": [{"parts": [{"text": prompt}]}]
     }
 
     try:
-        res = requests.post(url, json=payload, timeout=20)
+        res = requests.post(url, json=payload, timeout=25)
         res_data = res.json()
 
         if res.status_code != 200:
-            error_msg = res_data.get("error", {}).get("message", "Gemini API error")
+            error_msg = res_data.get("error", {}).get("message", "API request failed")
+            print(f"Gemini 3.5 Error: {error_msg}")
             return jsonify({"status": "error", "message": error_msg}), res.status_code
 
         raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -1169,8 +1170,9 @@ def start_quiz(room_code):
         return jsonify({"status": "success", "quiz": quiz_data})
 
     except Exception as e:
-        print(f"Quiz Generation Error: {e}")
+        print(f"Quiz Server Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
     

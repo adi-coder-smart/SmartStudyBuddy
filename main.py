@@ -1127,31 +1127,28 @@ def start_quiz(room_code):
     topic = request.form.get("topic", "Computer Science fundamentals")
     
     prompt = f"""
-    Generate 5 multiple-choice questions on the topic '{topic}' suitable for college computer science students.
-    Return ONLY a valid JSON array of objects. Do not wrap in markdown or backticks (no ```json).
-    Structure:
-    [
-      {{
-        "id": 1,
-        "question": "Question text here?",
-        "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-        "answer": "Option 1"
-      }}
-    ]
+    Generate 5 multiple-choice questions on '{topic}' suitable for college computer science students.
+    Include 4 options and the exact string matching correct answer.
     """
     
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        # Structured JSON enforcement
+        model = genai.GenerativeModel(
+            "gemini-1.5-flash",
+            generation_config={"response_mime_type": "application/json"}
+        )
         response = model.generate_content(prompt)
         
-        raw_text = response.text.strip()
-        cleaned_json = re.sub(r"^```json|```$", "", raw_text, flags=re.MULTILINE).strip()
-        quiz_data = json.loads(cleaned_json)
+        quiz_data = json.loads(response.text.strip())
         
+        # In case model wraps the array in a parent object like {"quiz": [...]}
+        if isinstance(quiz_data, dict):
+            quiz_data = next(iter(quiz_data.values()))
+            
         return jsonify({"status": "success", "quiz": quiz_data})
     except Exception as e:
         print(f"Quiz Generation Error: {e}")
-        return jsonify({"status": "error", "message": "Failed to generate quiz"}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
     

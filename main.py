@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import os
 import random
 import sqlite3
+import json
+import re
 import google.generativeai as genai
 
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
@@ -1120,6 +1122,36 @@ def ask_ai(code):
             print("🔥 CRITICAL AI ERROR:", repr(e))
 
     return redirect(f'/room/{code}')
+@app.route("/room/<room_code>/start_quiz", methods=["POST"])
+def start_quiz(room_code):
+    topic = request.form.get("topic", "Computer Science fundamentals")
+    
+    prompt = f"""
+    Generate 5 multiple-choice questions on the topic '{topic}' suitable for college computer science students.
+    Return ONLY a valid JSON array of objects. Do not wrap in markdown or backticks (no ```json).
+    Structure:
+    [
+      {{
+        "id": 1,
+        "question": "Question text here?",
+        "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+        "answer": "Option 1"
+      }}
+    ]
+    """
+    
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        
+        raw_text = response.text.strip()
+        cleaned_json = re.sub(r"^```json|```$", "", raw_text, flags=re.MULTILINE).strip()
+        quiz_data = json.loads(cleaned_json)
+        
+        return jsonify({"status": "success", "quiz": quiz_data})
+    except Exception as e:
+        print(f"Quiz Generation Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to generate quiz"}), 500
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
     

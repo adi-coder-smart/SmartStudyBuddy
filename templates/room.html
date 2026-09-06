@@ -30,6 +30,9 @@
             <small style="color: #8b949e;">Active Buddy Room</small>
         </div>
         <div class="room-tag">Room Code: {{ code }}</div>
+        <button onclick="openQuizModal()" class="btn-cyan" style="cursor: pointer; padding: 6px 14px; border-radius: 20px; font-weight: bold; border: none;">
+    ⚔️ Start Quiz Duel
+</button>
     </div>
 
     <div class="grid-layout">
@@ -78,7 +81,37 @@
     <!-- Markdown parser aur Code Syntax Highlighter -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<!-- Quiz Duel Overlay Modal -->
+<div id="quiz-modal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #131b2e; border: 1px solid #1f2a44; border-radius: 12px; width: 90%; max-width: 520px; padding: 25px; color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    
+    <div id="quiz-setup">
+      <h3 style="margin-top:0; color: #00f2fe;">⚔️ 1v1 Study Quiz Duel</h3>
+      <p style="color: #8b949e; font-size: 0.9rem;">Gemini AI 5 rapid-fire MCQs banayega. Topic enter karo:</p>
+      <input type="text" id="quiz-topic" placeholder="e.g. Operating Systems, DBMS, Python" style="width: 95%; padding: 10px; background: #0b0f19; border: 1px solid #1f2a44; color: #fff; border-radius: 6px; margin-bottom: 15px;">
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" onclick="closeQuizModal()" style="background: transparent; color: #8b949e; border: none; cursor: pointer; padding: 8px 14px;">Cancel</button>
+        <button type="button" onclick="fetchQuiz()" id="start-duel-btn" class="btn-cyan" style="padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">Generate & Start</button>
+      </div>
+    </div>
 
+    <div id="quiz-arena" style="display:none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2a44; padding-bottom: 10px; margin-bottom: 15px;">
+        <span id="quiz-progress" style="color: #8b949e; font-weight: bold;">Question 1/5</span>
+        <span id="quiz-timer" style="color: #ff007f; font-weight: bold; font-size: 1.1rem;">⏱️ 15s</span>
+      </div>
+      <h4 id="quiz-question-text" style="min-height: 50px; line-height: 1.4; margin-bottom: 20px;"></h4>
+      <div id="quiz-options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+
+    <div id="quiz-result" style="display:none; text-align: center; padding: 15px 0;">
+      <h2 style="color: #00f2fe; margin-bottom: 5px;">Duel Finished! 🏆</h2>
+      <p id="quiz-score-display" style="font-size: 1.3rem; font-weight: bold; margin: 15px 0;"></p>
+      <button type="button" onclick="closeQuizModal()" class="btn-cyan" style="padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;">Back to Room</button>
+    </div>
+
+  </div>
+</div>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         // AI answer wale elements ko markdown mein parse karna
@@ -88,6 +121,120 @@
         // Saare code blocks ko highlight karna
         hljs.highlightAll();
       });
+      let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let countdownTimer;
+let timeLeft = 15;
+
+function openQuizModal() {
+  document.getElementById('quiz-modal').style.display = 'flex';
+  document.getElementById('quiz-setup').style.display = 'block';
+  document.getElementById('quiz-arena').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'none';
+}
+
+function closeQuizModal() {
+  clearInterval(countdownTimer);
+  document.getElementById('quiz-modal').style.display = 'none';
+}
+
+async function fetchQuiz() {
+  const topic = document.getElementById('quiz-topic').value.trim() || 'Computer Science basics';
+  const startBtn = document.getElementById('start-duel-btn');
+  startBtn.innerText = 'Generating Quiz...';
+  startBtn.disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('topic', topic);
+
+    const res = await fetch(window.location.pathname.replace(/\/$/, "") + "/start_quiz", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+
+    if (data.status === 'success' && data.quiz && data.quiz.length > 0) {
+      currentQuestions = data.quiz;
+      currentIndex = 0;
+      score = 0;
+      document.getElementById('quiz-setup').style.display = 'none';
+      document.getElementById('quiz-arena').style.display = 'block';
+      loadQuestion();
+    } else {
+      alert("Quiz generation failed. Try another topic.");
+    }
+  } catch (err) {
+    alert("Server error while generating quiz.");
+  } finally {
+    startBtn.innerText = 'Generate & Start';
+    startBtn.disabled = false;
+  }
+}
+
+function loadQuestion() {
+  clearInterval(countdownTimer);
+  timeLeft = 15;
+  document.getElementById('quiz-timer').innerText = `⏱️ ${timeLeft}s`;
+
+  const q = currentQuestions[currentIndex];
+  document.getElementById('quiz-progress').innerText = `Question ${currentIndex + 1}/${currentQuestions.length}`;
+  document.getElementById('quiz-question-text').innerText = q.question;
+
+  const container = document.getElementById('quiz-options-container');
+  container.innerHTML = '';
+
+  q.options.forEach((opt) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.innerText = opt;
+    btn.style.cssText = "padding: 12px; text-align: left; background: #0b0f19; color: #fff; border: 1px solid #1f2a44; border-radius: 6px; cursor: pointer; transition: 0.2s;";
+    btn.onclick = () => handleAnswer(opt, q.answer, btn);
+    container.appendChild(btn);
+  });
+
+  countdownTimer = setInterval(() => {
+    timeLeft--;
+    document.getElementById('quiz-timer').innerText = `⏱️ ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(countdownTimer);
+      handleAnswer(null, q.answer, null);
+    }
+  }, 1000);
+}
+
+function handleAnswer(selected, correct, selectedBtn) {
+  clearInterval(countdownTimer);
+  const container = document.getElementById('quiz-options-container');
+  const buttons = container.querySelectorAll('button');
+  
+  buttons.forEach(btn => {
+    btn.disabled = true;
+    if (btn.innerText === correct) {
+      btn.style.background = '#155724';
+      btn.style.borderColor = '#28a745';
+    }
+  });
+
+  if (selected && selected === correct) {
+    score += 10;
+  } else if (selectedBtn) {
+    selectedBtn.style.background = '#721c24';
+    selectedBtn.style.borderColor = '#dc3545';
+  }
+
+  setTimeout(() => {
+    currentIndex++;
+    if (currentIndex < currentQuestions.length) {
+      loadQuestion();
+    } else {
+      document.getElementById('quiz-arena').style.display = 'none';
+      document.getElementById('quiz-result').style.display = 'block';
+      document.getElementById('quiz-score-display').innerText = `Your Score: ${score} / ${currentQuestions.length * 10}`;
+    }
+  }, 1200);
+}
     </script>
 </body>
 </html>

@@ -884,7 +884,75 @@ console.log(counterA()); // Output: 2
             </ul>
             """
         }
-    ]
+    ],"SE": [
+        {
+            "q": "Q1. What is SDLC? Compare Waterfall Model with Agile Methodology.",
+            "a": """
+<h3>1. What is SDLC?</h3>
+<p>SDLC (Software Development Life Cycle) is a structured process used by development teams to design, develop, test, and deploy high-quality software.</p>
+
+<h3>2. Waterfall Model (Linear-Sequential)</h3>
+<ul>
+  <li>Har phase (Requirements -> Design -> Coding -> Testing -> Deployment) step-by-step chalta hai.</li>
+  <li>Requirements shuru mein freeze ho jaati hain; beech mein changes allow nahi hote.</li>
+  <li><b>Best For:</b> Chhote projects jahan requirements bilkul clear aur fixed hon.</li>
+</ul>
+
+<h3>3. Agile Model (Iterative & Flexible)</h3>
+<ul>
+  <li>Kaam chhote-chhote sprints (1 to 4 weeks) mein divide hota hai.</li>
+  <li>Client feedback continuous hota hai aur requirement changes welcome hote hain.</li>
+  <li><b>Best For:</b> Modern dynamic web apps aur fast-evolving products.</li>
+</ul>
+"""
+        },
+        {
+            "q": "Q2. Differentiate between Functional vs Non-Functional Requirements.",
+            "a": """
+<h3>Functional Requirements (System Kya Karega)</h3>
+<ul>
+  <li>Direct business features define karta hai jo user ko chahiye.</li>
+  <li><b>Examples:</b> User Sign Up/Login, Study Room create karna, Notes post karna.</li>
+</ul>
+
+<h3>Non-Functional Requirements (System Kaise Perform Karega)</h3>
+<ul>
+  <li>Quality attributes, performance, aur system behavior specify karta hai.</li>
+  <li><b>Examples:</b> Security (Password hashing), Response Time (< 200ms), 99.9% Uptime, Scalability.</li>
+</ul>
+"""
+        },
+        {
+            "q": "Q3. What is the difference between Black-Box and White-Box Testing?",
+            "a": """
+<h3>Black-Box Testing (Behavioral Testing)</h3>
+<ul>
+  <li>Tester ko internal source code aur logic ka koi pata nahi hota.</li>
+  <li>Focus: Valid/Invalid input daal kar sirf final output check karna.</li>
+  <li>Karta kaun hai: Software Testers (QA engineers) aur End Users.</li>
+</ul>
+
+<h3>White-Box Testing (Structural Testing)</h3>
+<ul>
+  <li>Tester ke paas pura internal source code, control flows, aur loops ka access hota hai.</li>
+  <li>Focus: Statement coverage, branch coverage, aur internal bugs dhoondhna.</li>
+  <li>Karta kaun hai: Developers (Unit Testing ke time).</li>
+</ul>
+"""
+        },
+        {
+            "q": "Q4. What is Software Maintenance? Explain its 4 Types.",
+            "a": """
+<p>Deployment ke baad software ko update aur bug-free rakhne ke process ko Software Maintenance kehte hain.</p>
+<ul>
+  <li><b>Corrective:</b> Live bugs aur errors fix karna.</li>
+  <li><b>Adaptive:</b> Naye OS, browser, ya environment ke sath compatible banana.</li>
+  <li><b>Perfective:</b> Naye features add karna aur performance boost karna.</li>
+  <li><b>Preventive:</b> Future errors se bachne ke liye code refactor karna.</li>
+</ul>
+"""
+        }
+    ],
 })
 @app.route('/')
 def index():

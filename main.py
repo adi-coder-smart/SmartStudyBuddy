@@ -1141,12 +1141,13 @@ def start_quiz(room_code):
     """
     
     try:
-        # Try 1.5-flash first, fallback to gemini-pro if older sdk
+        # Gemini 3.5 Flash primary call
         try:
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-3.5-flash")
             response = model.generate_content(prompt)
         except Exception:
-            model = genai.GenerativeModel("gemini-pro")
+            # Fallback to general flash if older API endpoint
+            model = genai.GenerativeModel("gemini-1.5-flash-latest")
             response = model.generate_content(prompt)
             
         raw_text = response.text.strip()

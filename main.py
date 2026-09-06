@@ -1146,8 +1146,9 @@ def start_quiz(room_code):
     """
 
     # Clean plain REST endpoint without any markdown brackets
-    endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent)"
-    url = f"{endpoint}?key={api_key}"
+    endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent'
+    url = endpoint + '?key=' + str(api_key)
+    print("SENDING URL TO REQUESTS:", url)
 
     payload = {
         "contents": [{"parts": [{"text": prompt}]}]
